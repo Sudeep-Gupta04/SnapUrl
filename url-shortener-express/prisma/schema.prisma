@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  username String @unique
+  password String
+  role     String @default("ROLE_USER")
+
+  // Relations
+  urlMappings UrlMapping[]
+
+  @@map("users")
+}
+
+model UrlMapping {
+  id          Int      @id @default(autoincrement())
+  originalUrl String
+  shortenUrl  String   @unique
+  clickCount  Int      @default(0)
+  createdDate DateTime @default(now())
+
+  // Relations
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clickEvents ClickEvent[]
+
+  @@map("url_mappings")
+}
+
+model ClickEvent {
+  id        Int      @id @default(autoincrement())
+  clickDate DateTime @default(now())
+
+  // Relations
+  urlMappingId Int
+  urlMapping   UrlMapping @relation(fields: [urlMappingId], references: [id], onDelete: Cascade)
+
+  @@map("click_events")
+} 
